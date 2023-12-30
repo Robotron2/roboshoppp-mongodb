@@ -66,3 +66,56 @@ export const getAllCategoriesController = async (req, res) => {
 		})
 	}
 }
+
+export const updateCategoryController = async (req, res) => {
+	const { id } = req.query
+	const { name, color, icon } = req.body
+	try {
+		if (!id) {
+			throw Error("You must provide a valid id.")
+		}
+
+		if (!name) {
+			console.log(true)
+			throw Error("Category name must be provided!")
+		}
+
+		const category = await Category.findByIdAndUpdate(id, { name: _.toLower(name), color, icon }, { new: true })
+		res.status(200).json({
+			success: true,
+			message: "Category was updated successfully.",
+			category,
+		})
+	} catch (error) {
+		console.log(error)
+		res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
+
+export const deleteCategoryController = async (req, res) => {
+	const { id } = req.params
+	try {
+		if (!id) {
+			throw Error("You must provide a valid id.")
+		}
+
+		const deletedCategory = await Category.findByIdAndDelete(id)
+		if (!deletedCategory) {
+			throw Error("There was an error while deleting the category")
+		}
+
+		return res.status(200).json({
+			success: true,
+			message: "Category deleted successfully",
+		})
+	} catch (error) {
+		console.log(error)
+		res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
