@@ -7,6 +7,7 @@ import {
 	getProductCountController,
 	getSingleProductController,
 	updateProductController,
+	uploadMultipleImagesController,
 } from "../controllers/productsController.js"
 import multer from "multer"
 import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js"
@@ -53,6 +54,9 @@ router.post(`/`, upload.single("image"), createProductController)
 
 //update
 router.put(`/`, requireSignIn, isAdmin, updateProductController)
+
+//update product images
+router.put("/multiple-images/:productId", upload.array("files", 5), uploadMultipleImagesController)
 
 //get all
 router.get(`/`, getAllProductsController)

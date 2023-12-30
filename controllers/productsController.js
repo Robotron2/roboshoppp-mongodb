@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import { Category } from "../models/categoriesModel.js"
 import { Product } from "../models/productsModel.js"
 
@@ -195,6 +196,46 @@ export const updateProductController = async (req, res) => {
 			success: true,
 			message: "Product updated successfully.",
 		})
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
+
+export const uploadMultipleImagesController = async (req, res) => {
+	const { productId } = req.params
+	try {
+		if (!productId || !mongoose.isValidObjectId(productId)) {
+			return res.status(400).json({
+				success: false,
+				message: "Invalid product Id",
+			})
+		}
+		const files = req.files
+		let imagesPaths = []
+		const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`
+
+		if (files) {
+			files.map((file) => {
+				imagesPaths.push(`${basePath}${file.filename}`)
+			})
+		}
+
+		const product = await Product.findByIdAndUpdate(
+			productId,
+			{
+				images: imagesPaths,
+			},
+			{ new: true }
+		)
+
+		if (!product) {
+			return res.status(500).json({ message: "The gallery cannot be updated!", success: false })
+		}
+
+		res.status(200).json({ success: true, product })
 	} catch (error) {
 		return res.status(500).json({
 			success: false,

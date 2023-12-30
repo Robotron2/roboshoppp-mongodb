@@ -12,6 +12,9 @@ app.use(morgan("dev"))
 app.use(cors())
 app.options("*", cors())
 
+app.use(express.static("public"))
+app.use("/public", express.static("public", { maxAge: 604800 }))
+
 connectDB()
 
 app.get("/", (req, res) => {
