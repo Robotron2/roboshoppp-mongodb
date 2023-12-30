@@ -103,9 +103,6 @@ export const deleteCategoryController = async (req, res) => {
 		}
 
 		const deletedCategory = await Category.findByIdAndDelete(id)
-		if (!deletedCategory) {
-			throw Error("There was an error while deleting the category")
-		}
 
 		return res.status(200).json({
 			success: true,
