@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
+import { Schema, model } from "mongoose"
 
-const categorySchema = mongoose.Schema({
+const categorySchema = Schema({
 	name: {
 		type: String,
 		required: true,
@@ -10,8 +10,8 @@ const categorySchema = mongoose.Schema({
 	},
 	color: {
 		type: String,
+		default: "#00000",
 	},
 })
 
-const Category = mongoose.model("Category", categorySchema)
-module.exports = Category
+export const Category = model("Category", categorySchema)

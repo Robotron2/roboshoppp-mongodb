@@ -1,9 +1,11 @@
-require("dotenv").config()
+import dotenv from "dotenv"
+dotenv.config()
 
-const express = require("express")
-const morgan = require("morgan")
-const cors = require("cors")
-const { connectDB } = require("./config/db")
+import express from "express"
+import morgan from "morgan"
+import cors from "cors"
+import connectDB from "./config/db.js"
+
 const app = express()
 
 app.use(express.json())
@@ -22,10 +24,10 @@ app.get("/", (req, res) => {
 })
 
 const api = process.env.API_URL
-const userRoute = require("./routes/userRoute")
-const productsRoute = require("./routes/productsRoute")
-const categoriesRoute = require("./routes/categoriesRoute")
-const ordersRoute = require("./routes/ordersRoute")
+import userRoute from "./routes/userRoute.js"
+import productsRoute from "./routes/productsRoute.js"
+import categoriesRoute from "./routes/categoryRoute.js"
+import ordersRoute from "./routes/ordersRoute.js"
 
 app.use(`${api}/user`, userRoute)
 app.use(`${api}/products`, productsRoute)

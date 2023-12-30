@@ -1,15 +1,14 @@
-const mongoose = require("mongoose")
+import { Schema, model } from "mongoose"
 
-const orderItemSchema = mongoose.Schema({
+const orderItemSchema = Schema({
 	quantity: {
 		type: Number,
 		required: true,
 	},
 	product: {
-		type: mongoose.Schema.Types.ObjectId,
+		type: Schema.Types.ObjectId,
 		ref: "Product",
 	},
 })
 
-const OrderItem = mongoose.model("OrderItem", orderItemSchema)
-module.exports = OrderItem
+export const OrderItem = model("OrderItem", orderItemSchema)

@@ -1,17 +1,20 @@
-const express = require("express")
+import { Router } from "express"
+import { createCategoryController, getAllCategoriesController } from "../controllers/categoriesController.js"
 
-const router = express.Router()
+const router = Router()
 
 //Routes CRUD
 
 //create
+router.post(`/`, createCategoryController)
 
 //update
 
 //get all
+router.get(`/`, getAllCategoriesController)
 
 //single
 
 //delete
 
-module.exports = router
+export default router

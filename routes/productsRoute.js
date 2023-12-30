@@ -1,6 +1,6 @@
-const express = require("express")
+import { Router } from "express"
 
-const router = express.Router()
+const router = Router()
 
 //Routes
 
@@ -12,4 +12,4 @@ const router = express.Router()
 
 //delete product
 
-module.exports = router
+export default router
