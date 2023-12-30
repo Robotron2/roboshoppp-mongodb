@@ -2,8 +2,9 @@ import { Category } from "../models/categoriesModel.js"
 import { Product } from "../models/productsModel.js"
 
 export const createProductController = async (req, res) => {
+	const { filename } = req.file
 	const { name, description, richDescription, image, brand, price, categoryId, countInStock, rating, numReviews, isFeatured } = req.body
-
+	const baseUrl = `${req.protocol}://${req.get("host")}/public/upload`
 	try {
 		if (!name) {
 			throw Error("You must provide a name")
@@ -20,7 +21,7 @@ export const createProductController = async (req, res) => {
 			name,
 			description,
 			richDescription,
-			image,
+			image: `${baseUrl}/${filename}`,
 			brand,
 			price,
 			category: categoryId,
