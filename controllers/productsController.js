@@ -101,6 +101,49 @@ export const getAllProductsController = async (req, res) => {
 	}
 }
 
+export const getProductCountController = async (req, res) => {
+	try {
+		const productCount = await Product.countDocuments()
+
+		if (!productCount) {
+			return res.status(500).json({
+				success: false,
+			})
+		}
+		return res.status(200).json({
+			success: true,
+			productCount,
+		})
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
+
+export const getFeaturedProductCountController = async (req, res) => {
+	const limit = req.query.limit || 4
+	try {
+		const featuredProduct = await Product.find({ isFeatured: true }).limit(+limit) //+sign coonverts the limit to an int.
+
+		if (!featuredProduct) {
+			return res.status(500).json({
+				success: false,
+			})
+		}
+		return res.status(200).json({
+			success: true,
+			featuredProduct,
+		})
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
+
 export const updateProductController = async (req, res) => {
 	const { name, description, richDescription, image, brand, price, categoryId, countInStock, rating, numReviews, isFeatured } = req.body
 

@@ -11,4 +11,11 @@ const orderItemSchema = Schema({
 	},
 })
 
+orderItemSchema.virtual("id").get(function () {
+	return this._id.toHexString()
+})
+orderItemSchema.set("toJSON", {
+	virtuals: true,
+})
+
 export const OrderItem = model("OrderItem", orderItemSchema)
