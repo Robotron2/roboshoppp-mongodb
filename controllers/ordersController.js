@@ -16,6 +16,15 @@ export const createOrderController = async (req, res) => {
 	)
 	const orderItemsIdsResolved = await orderItemIds
 
+	const totalPrices = await Promise.all(
+		orderItemsIdsResolved.map(async (orderItemId) => {
+			const orderItem = await OrderItem.findById(orderItemId).populate("product", "price")
+			const totalPrice = orderItem.product.price * orderItem.quantity
+			return totalPrice
+		})
+	)
+	const totalPrice = totalPrices.reduce((a, b) => a + b, 0)
+
 	let order = new Order({
 		orderItems: orderItemsIdsResolved,
 		shippingAddress1: req.body.shippingAddress1,
@@ -25,6 +34,7 @@ export const createOrderController = async (req, res) => {
 		country: req.body.country,
 		phone: req.body.phone,
 		status: req.body.status,
+		totalPrice,
 		user: req.body.user,
 	})
 	order = await order.save()
@@ -70,6 +80,82 @@ export const getSingleOrderController = async (req, res) => {
 		return res.status(200).json({ success: true, order })
 	} catch (error) {
 		return res.status(500).json({ success: false, message: error.message })
+	}
+}
+
+export const getTotalSalesController = async (req, res) => {
+	try {
+		const totalSales = await Order.aggregate([
+			{
+				$group: {
+					_id: null,
+					totalSales: { $sum: "$totalPrice" },
+				},
+			},
+		])
+
+		if (!totalSales) {
+			return res.status(400).json({ success: false, message: "Total sales cannot be generated at the moment" })
+		}
+		return res.status(200).json({ success: true, totalSales: totalSales.pop().totalSales })
+	} catch (error) {
+		return res.status(500).json({ success: false, message: error.message })
+	}
+}
+
+export const getOrdersCountController = async (req, res) => {
+	try {
+		const orderCount = await Order.countDocuments()
+
+		if (!orderCount) {
+			return res.status(500).json({
+				success: false,
+			})
+		}
+		return res.status(200).json({
+			success: true,
+			orderCount,
+		})
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
+
+export const getSingleUserOrderController = async (req, res) => {
+	const { id } = req.params
+
+	try {
+		if (!id || !mongoose.isValidObjectId(id)) {
+			throw Error("Enter a valid id")
+		}
+
+		const userOrderList = await Order.find({
+			user: id,
+		})
+			.populate({
+				path: "orderItems",
+				populate: { path: "product", populate: "category" },
+			})
+			.sort({ dateOrdered: -1 })
+
+		if (!userOrderList) {
+			return res.status(500).json({
+				success: false,
+				message: "Cannot get get user order list",
+			})
+		}
+		return res.status(200).json({
+			success: true,
+			userOrderList,
+		})
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		})
 	}
 }
 
