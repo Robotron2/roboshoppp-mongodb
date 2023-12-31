@@ -21,11 +21,7 @@ export const userSchema = new Schema({
 		type: Boolean,
 		default: false,
 	},
-	street: {
-		type: String,
-		default: "",
-	},
-	apartment: {
+	address: {
 		type: String,
 		default: "",
 	},

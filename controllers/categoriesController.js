@@ -48,7 +48,7 @@ export const createCategoryController = async (req, res) => {
 
 export const getAllCategoriesController = async (req, res) => {
 	try {
-		const allCategories = await Category.find({})
+		const allCategories = await Category.find({}).select("name id")
 
 		if (!allCategories) {
 			throw Error("Error fetching all categories")

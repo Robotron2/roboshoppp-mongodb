@@ -30,13 +30,13 @@ const storage = multer.diskStorage({
 			uploadError = null
 		}
 
-		const destinationFolder = "public/uploads"
+		const destinationFolder = "public/upload"
 
 		if (!fs.existsSync(destinationFolder)) {
 			fs.mkdirSync(destinationFolder, { recursive: true })
 		}
 
-		cb(uploadError, "public/uploads")
+		cb(uploadError, "public/upload")
 	},
 	filename: function (req, file, cb) {
 		const fileName = file.originalname.split(" ").join("-")
@@ -50,19 +50,19 @@ const upload = multer({ storage: storage })
 //Routes CRUD
 
 //create
-router.post(`/`, upload.single("image"), createProductController)
+router.post(`/`, requireSignIn, isAdmin, upload.single("image"), createProductController)
 
 //update
-router.put(`/`, requireSignIn, isAdmin, updateProductController)
+router.put(`/`, requireSignIn, isAdmin, upload.single("image"), updateProductController)
 
 //update product images
-router.put("/multiple-images/:productId", upload.array("files", 5), uploadMultipleImagesController)
+router.put("/multiple-images/:productId", requireSignIn, isAdmin, upload.array("files", 5), uploadMultipleImagesController)
 
 //get all
 router.get(`/`, getAllProductsController)
 
 //get single product
-router.get(`/`, getSingleProductController)
+router.get(`/product`, getSingleProductController)
 
 //get product count
 router.get(`/get-count`, requireSignIn, isAdmin, getProductCountController)
@@ -71,6 +71,6 @@ router.get(`/get-count`, requireSignIn, isAdmin, getProductCountController)
 router.get(`/get-featured`, getFeaturedProductCountController)
 
 //delete
-router.delete(`/:id`, deleteProductController)
+router.delete(`/:id`, requireSignIn, isAdmin, deleteProductController)
 
 export default router

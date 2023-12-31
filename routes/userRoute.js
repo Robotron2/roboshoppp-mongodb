@@ -1,5 +1,12 @@
 import { Router } from "express"
-import { getAllUsersController, getSingleUserController, loginUserController, registerUserController } from "../controllers/usersController.js"
+import {
+	authorizeAdminController,
+	authorizeUserController,
+	getAllUsersController,
+	getSingleUserController,
+	loginUserController,
+	registerUserController,
+} from "../controllers/usersController.js"
 import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js"
 
 const router = Router()
@@ -10,6 +17,9 @@ router.post("/register", registerUserController)
 router.post("/login", loginUserController)
 
 //Get Users - Read
+router.get("/authorize-user", requireSignIn, authorizeUserController)
+router.get("/authorize-admin", requireSignIn, isAdmin, authorizeAdminController)
+
 router.get("/", requireSignIn, isAdmin, getAllUsersController)
 router.get("/:id", getSingleUserController)
 

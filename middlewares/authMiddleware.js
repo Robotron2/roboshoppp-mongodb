@@ -6,6 +6,8 @@ export const requireSignIn = async (req, res, next) => {
 		if (decode.userId) {
 			req.user = decode
 			next()
+		} else {
+			return res.status(403).json({ success: false, message: "You're not logged in" })
 		}
 	} catch (error) {
 		res.status(500).json({
@@ -21,6 +23,8 @@ export const isAdmin = async (req, res, next) => {
 		const decode = JWT.verify(req.headers.authorization, process.env.JWT_SECRET)
 		if (decode.isAdmin) {
 			next()
+		} else {
+			return res.status(403).json({ success: false, message: "You're not authorized" })
 		}
 	} catch (error) {
 		// console.log(error)

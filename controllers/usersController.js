@@ -5,10 +5,10 @@ import mongoose from "mongoose"
 import JWT from "jsonwebtoken"
 
 export const registerUserController = async (req, res) => {
-	const { name, email, password, phone, isAdmin, street, apartment, zip, city, country } = req.body
+	const { name, email, password, phone, isAdmin, address, zip, city, country } = req.body
 	const saltRounds = 10
 	try {
-		if (!name || !email || !password || !phone || !street || !apartment || !zip || !city || !country) {
+		if (!name || !email || !password || !phone || !address || !zip || !city || !country) {
 			throw Error("All fields must be filled")
 		}
 
@@ -24,9 +24,8 @@ export const registerUserController = async (req, res) => {
 			passwordHash,
 			phone,
 			isAdmin,
-			street: _.toLower(street),
-			apartment: _.toLower(apartment),
 			zip,
+			address,
 			city: _.toLower(city),
 			country: _.toLower(country),
 		})
@@ -41,8 +40,6 @@ export const registerUserController = async (req, res) => {
 			message: error.message,
 		})
 	}
-
-	res.send(user)
 }
 
 export const getSingleUserController = async (req, res) => {
@@ -104,7 +101,12 @@ export const loginUserController = async (req, res) => {
 			return res.status(200).json({
 				success: true,
 				token,
-				user: { email: user.email, id: user.id, isAdmin: user.isAdmin },
+				// user: { email: user.email, id: user.id, isAdmin: user.isAdmin },
+			})
+		} else {
+			return res.status(400).json({
+				success: false,
+				message: "Password incorrect",
 			})
 		}
 	} catch (error) {
@@ -112,5 +114,34 @@ export const loginUserController = async (req, res) => {
 			success: false,
 			message: error.message,
 		})
+	}
+}
+
+export const authorizeUserController = async (req, res) => {
+	// { userId: user.id, isAdmin: user.isAdmin }
+	const { user } = req
+	const { userId } = user
+	try {
+		const user = await User.findById(userId).select("-passwordHash")
+		if (!user) {
+			return res.status(400).json({ success: false, message: "User not found." })
+		}
+		return res.status(200).json({ success: true, user })
+	} catch (error) {
+		return res.status(500).json({ success: false, message: error.message })
+	}
+}
+export const authorizeAdminController = async (req, res) => {
+	// { userId: user.id, isAdmin: user.isAdmin }
+	const { user } = req
+	const { userId } = user
+	try {
+		const admin = await User.findById(userId).select("-passwordHash")
+		if (!admin) {
+			return res.status(400).json({ success: false, message: "User not found." })
+		}
+		return res.status(200).json({ success: true, admin })
+	} catch (error) {
+		return res.status(500).json({ success: false, message: error.message })
 	}
 }

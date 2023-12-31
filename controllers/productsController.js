@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 import { Category } from "../models/categoriesModel.js"
 import { Product } from "../models/productsModel.js"
+import _ from "lodash"
 
 export const createProductController = async (req, res) => {
 	const { name, description, richDescription, brand, price, categoryId, countInStock, rating, numReviews, isFeatured } = req.body
@@ -88,19 +89,55 @@ export const getSingleProductController = async (req, res) => {
 	}
 }
 
+// export const getAllProductsController = async (req, res) => {
+// 	try {
+// 		const allProducts = await Product.find({}).select("name image ").populate("category") // select the  name, image and exclude image
+// 		if (!allProducts) {
+// 			return res.status(400).json({
+// 				success: false,
+// 				message: "Could not fetch all products",
+// 			})
+// 		}
+
+// 		return res.status(200).json({
+// 			success: true,
+// 			allProducts,
+// 		})
+// 	} catch (error) {
+// 		return res.status(500).json({
+// 			success: false,
+// 			message: error.message,
+// 		})
+// 	}
+// }
+
 export const getAllProductsController = async (req, res) => {
 	try {
-		const allProducts = await Product.find({}).select("name image ").populate("category") // select the  name, image and exclude image
+		const page = parseInt(req.query.page) || 1
+		const pageSize = parseInt(req.query.pageSize) || 4
+
+		const skip = (page - 1) * pageSize
+
+		const allProducts = await Product.find({}).select("name image description price countInStock").populate("category").skip(skip).limit(pageSize)
+
 		if (!allProducts) {
 			return res.status(400).json({
 				success: false,
 				message: "Could not fetch all products",
 			})
 		}
+		if (allProducts.length === 0) {
+			return res.status(200).json({
+				success: true,
+				allProducts,
+				message: "All products fetched",
+			})
+		}
 
 		return res.status(200).json({
 			success: true,
 			allProducts,
+			currentPage: page,
 		})
 	} catch (error) {
 		return res.status(500).json({
@@ -154,34 +191,32 @@ export const getFeaturedProductCountController = async (req, res) => {
 }
 
 export const updateProductController = async (req, res) => {
-	const { name, description, richDescription, image, brand, price, categoryId, countInStock, rating, numReviews, isFeatured } = req.body
-
+	const { richDescription, price, countInStock, isFeatured } = req.body
+	let newImageUrl = null
 	const { productId } = req.query
 	try {
 		if (!productId) {
 			throw Error("Provide a valid product id")
 		}
 
-		const validCategory = await Category.findById(categoryId)
-		if (!validCategory) {
-			throw Error("Enter a valid category")
+		const { file } = req
+		if (file) {
+			const { filename } = req.file
+			const baseUrl = `${req.protocol}://${req.get("host")}/public/upload`
+			newImageUrl = `${baseUrl}/${filename}`
 		}
+
+		const product = await Product.findById(productId)
 
 		const updatedProduct = await Product.findByIdAndUpdate(
 			{
 				_id: productId,
 			},
 			{
-				name,
-				description,
 				richDescription,
-				image,
-				brand,
+				image: !_.isNull(newImageUrl) ? newImageUrl : product.image,
 				price,
-				categoryId,
 				countInStock,
-				rating,
-				numReviews,
 				isFeatured,
 			},
 			{ new: true }
@@ -197,6 +232,7 @@ export const updateProductController = async (req, res) => {
 			message: "Product updated successfully.",
 		})
 	} catch (error) {
+		console.log(error)
 		return res.status(500).json({
 			success: false,
 			message: error.message,
