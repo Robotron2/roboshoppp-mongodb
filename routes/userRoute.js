@@ -2,6 +2,7 @@ import { Router } from "express"
 import {
 	authorizeAdminController,
 	authorizeUserController,
+	checkRolesController,
 	getAllUsersController,
 	getSingleUserController,
 	loginUserController,
@@ -17,8 +18,9 @@ router.post("/register", registerUserController)
 router.post("/login", loginUserController)
 
 //Get Users - Read
-router.get("/authorize-user", requireSignIn, authorizeUserController)
 router.get("/authorize-admin", requireSignIn, isAdmin, authorizeAdminController)
+router.get("/authorize-user", requireSignIn, authorizeUserController)
+router.get("/authorize-roles", requireSignIn, checkRolesController)
 
 router.get("/", requireSignIn, isAdmin, getAllUsersController)
 router.get("/:id", getSingleUserController)
