@@ -158,22 +158,22 @@ export const checkRolesController = async (req, res) => {
 	}
 
 	try {
+		const user = await User.findOne({ _id: userId }).select("name id")
+		if (!user) {
+			throw new Error("User not found.")
+		}
 		if (isAdmin === false) {
 			roles.isCustomer = true
 			return res.status(200).json({
 				success: true,
 				message: "Authorized",
 				roles,
+				user,
 			})
 		}
 
 		roles.isCustomer = true
 		roles.isAdmin = true
-
-		const user = await User.findOne({ _id: userId }).select("name id")
-		if (!user) {
-			throw new Error("User not found.")
-		}
 
 		return res.status(200).json({
 			success: true,

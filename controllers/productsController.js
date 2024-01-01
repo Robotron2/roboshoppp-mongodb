@@ -171,7 +171,7 @@ export const getProductCountController = async (req, res) => {
 export const getFeaturedProductCountController = async (req, res) => {
 	const limit = req.query.limit || 4
 	try {
-		const featuredProduct = await Product.find({ isFeatured: true }).limit(+limit) //+sign coonverts the limit to an int.
+		const featuredProduct = await Product.find({ isFeatured: true }).populate("category").limit(+limit) //+sign coonverts the limit to an int.
 
 		if (!featuredProduct) {
 			return res.status(500).json({
@@ -181,6 +181,34 @@ export const getFeaturedProductCountController = async (req, res) => {
 		return res.status(200).json({
 			success: true,
 			featuredProduct,
+		})
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
+
+export const getRandomProductByCategoryController = async (req, res) => {
+	const { limit, categoryId } = req.query || 4
+	console.log(categoryId)
+	try {
+		if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
+			throw Error("Provide a valid category id")
+		}
+
+		const randomCategoryProducts = await Product.find({ category: categoryId })
+		// console.log(randomCategoryProducts)
+
+		if (!randomCategoryProducts) {
+			return res.status(500).json({
+				success: false,
+			})
+		}
+		return res.status(200).json({
+			success: true,
+			randomCategoryProducts,
 		})
 	} catch (error) {
 		return res.status(500).json({
