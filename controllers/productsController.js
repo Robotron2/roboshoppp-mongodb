@@ -164,6 +164,47 @@ export const getProductCountController = async (req, res) => {
 	}
 }
 
+export const getProductsByCategoryController = async (req, res) => {
+	try {
+		const { id } = req.query
+		const page = parseInt(req.query.page) || 1
+		const pageSize = parseInt(req.query.pageSize) || 4
+
+		const skip = (page - 1) * pageSize
+
+		const allProducts = await Product.find({ category: id })
+			.select("name image description price countInStock")
+			.populate("category")
+			.skip(skip)
+			.limit(pageSize)
+
+		if (!allProducts) {
+			return res.status(400).json({
+				success: false,
+				message: "Could not fetch all products",
+			})
+		}
+		if (allProducts.length === 0) {
+			return res.status(200).json({
+				success: true,
+				allProducts,
+				message: "All products fetched",
+			})
+		}
+
+		return res.status(200).json({
+			success: true,
+			allProducts,
+			currentPage: page,
+		})
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		})
+	}
+}
+
 const getRandomProductByCategoryController = async (id) => {
 	const allCategories = await Category.find({}).select("id name")
 
