@@ -5,7 +5,7 @@ import {
 	getAllProductsController,
 	getFeaturedProductCountController,
 	getProductCountController,
-	getRandomProductByCategoryController,
+	// getRandomProductByCategoryController,
 	getSingleProductController,
 	updateProductController,
 	uploadMultipleImagesController,
@@ -72,7 +72,7 @@ router.get(`/get-count`, requireSignIn, isAdmin, getProductCountController)
 router.get(`/get-featured`, getFeaturedProductCountController)
 
 //get random products by category
-router.get(`/category/get-product`, getRandomProductByCategoryController)
+// router.get(`/category/get-product`, getRandomProductByCategoryController)
 
 //delete
 router.delete(`/:id`, requireSignIn, isAdmin, deleteProductController)

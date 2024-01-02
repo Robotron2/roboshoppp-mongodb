@@ -168,55 +168,51 @@ export const getProductCountController = async (req, res) => {
 	}
 }
 
+const getRandomProductByCategoryController = async (id) => {
+	const allCategories = await Category.find({}).select("id name")
+
+	const randomId = Math.floor(Math.random() * allCategories.length)
+	// console.log(allCategories[randomId])
+
+	const randomCategoryProducts = await Product.find({ category: id }).select("name description image price countInStock")
+	const randomCategoryData = await Category.findById(id).select("name")
+	// console.log(randomCategoryProducts)
+	return { randomCategoryProducts, randomCategoryData }
+}
+
 export const getFeaturedProductCountController = async (req, res) => {
+	// const limit = 4
 	const limit = req.query.limit || 4
+
+	const allCategories = await Category.find({}).select("id")
+	const randomId = Math.floor(Math.random() * allCategories.length)
+	// console.log(allCategories[randomId])
+
 	try {
 		const featuredProduct = await Product.find({ isFeatured: true }).populate("category").limit(+limit) //+sign coonverts the limit to an int.
-
+		const { randomCategoryProducts, randomCategoryData } = await getRandomProductByCategoryController(allCategories[randomId])
+		// console.log(randomCategoryProducts)
 		if (!featuredProduct) {
 			return res.status(500).json({
 				success: false,
 			})
 		}
-		return res.status(200).json({
+		res.status(200).json({
 			success: true,
 			featuredProduct,
-		})
-	} catch (error) {
-		return res.status(500).json({
-			success: false,
-			message: error.message,
-		})
-	}
-}
-
-export const getRandomProductByCategoryController = async (req, res) => {
-	const { limit, categoryId } = req.query || 4
-	console.log(categoryId)
-	try {
-		if (!categoryId || !mongoose.isValidObjectId(categoryId)) {
-			throw Error("Provide a valid category id")
-		}
-
-		const randomCategoryProducts = await Product.find({ category: categoryId })
-		// console.log(randomCategoryProducts)
-
-		if (!randomCategoryProducts) {
-			return res.status(500).json({
-				success: false,
-			})
-		}
-		return res.status(200).json({
-			success: true,
 			randomCategoryProducts,
+
+			randomCategoryData,
 		})
 	} catch (error) {
+		// console.log(error)
 		return res.status(500).json({
 			success: false,
 			message: error.message,
 		})
 	}
 }
+// getFeaturedProductCountController()
 
 export const updateProductController = async (req, res) => {
 	const { richDescription, price, countInStock, isFeatured } = req.body
