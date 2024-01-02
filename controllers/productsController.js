@@ -64,6 +64,8 @@ export const createProductController = async (req, res) => {
 
 export const getSingleProductController = async (req, res) => {
 	const { id } = req.query
+	let isAvailable = true
+	// let relatedProduct = true
 	try {
 		if (!id) {
 			throw Error("Provide a valid id")
@@ -76,10 +78,14 @@ export const getSingleProductController = async (req, res) => {
 				message: "Could not fetch product",
 			})
 		}
+		if (product.toJSON().countInStock < 1) {
+			isAvailable = false
+		}
 
 		return res.status(200).json({
 			success: true,
 			product,
+			isAvailable,
 		})
 	} catch (error) {
 		return res.status(500).json({
