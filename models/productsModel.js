@@ -17,11 +17,9 @@ const productSchema = Schema({
 		type: String,
 		default: "",
 	},
-	images: [
-		{
-			type: String,
-		},
-	],
+	imageName: {
+		type: String,
+	},
 	brand: {
 		type: String,
 		default: "",

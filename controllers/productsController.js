@@ -2,6 +2,8 @@ import mongoose from "mongoose"
 import { Category } from "../models/categoriesModel.js"
 import { Product } from "../models/productsModel.js"
 import _ from "lodash"
+import fs from "fs/promises"
+import path from "path"
 
 export const createProductController = async (req, res) => {
 	const { name, description, richDescription, brand, price, categoryId, countInStock, rating, numReviews, isFeatured } = req.body
@@ -31,6 +33,7 @@ export const createProductController = async (req, res) => {
 			description,
 			richDescription,
 			image: `${baseUrl}/${filename}`,
+			imageName: filename,
 			brand,
 			price,
 			category: categoryId,
@@ -65,12 +68,13 @@ export const createProductController = async (req, res) => {
 export const getSingleProductController = async (req, res) => {
 	const { id } = req.query
 	let isAvailable = true
-	// let relatedProduct = true
+
 	try {
 		if (!id) {
 			throw Error("Provide a valid id")
 		}
-		const product = await Product.findById(id).populate("category") //include the category document
+
+		const product = await Product.findById(id).populate("category")
 
 		if (!product) {
 			return res.status(404).json({
@@ -78,14 +82,22 @@ export const getSingleProductController = async (req, res) => {
 				message: "Could not fetch product",
 			})
 		}
+
 		if (product.toJSON().countInStock < 1) {
 			isAvailable = false
 		}
+
+		// Find related products in the same category, excluding the current product
+		const relatedProducts = await Product.find({
+			category: product.category,
+			_id: { $ne: product._id }, // Exclude the current product
+		}).limit(5) // Adjust the limit as needed
 
 		return res.status(200).json({
 			success: true,
 			product,
 			isAvailable,
+			relatedProducts,
 		})
 	} catch (error) {
 		return res.status(500).json({
@@ -94,28 +106,6 @@ export const getSingleProductController = async (req, res) => {
 		})
 	}
 }
-
-// export const getAllProductsController = async (req, res) => {
-// 	try {
-// 		const allProducts = await Product.find({}).select("name image ").populate("category") // select the  name, image and exclude image
-// 		if (!allProducts) {
-// 			return res.status(400).json({
-// 				success: false,
-// 				message: "Could not fetch all products",
-// 			})
-// 		}
-
-// 		return res.status(200).json({
-// 			success: true,
-// 			allProducts,
-// 		})
-// 	} catch (error) {
-// 		return res.status(500).json({
-// 			success: false,
-// 			message: error.message,
-// 		})
-// 	}
-// }
 
 export const getAllProductsController = async (req, res) => {
 	try {
@@ -218,7 +208,6 @@ export const getFeaturedProductCountController = async (req, res) => {
 		})
 	}
 }
-// getFeaturedProductCountController()
 
 export const updateProductController = async (req, res) => {
 	const { richDescription, price, countInStock, isFeatured } = req.body
@@ -312,11 +301,35 @@ export const uploadMultipleImagesController = async (req, res) => {
 
 export const deleteProductController = async (req, res) => {
 	const { id } = req.params
+
 	try {
 		if (!id) {
 			throw Error("You must provide a valid product id.")
 		}
 
+		const product = await Product.findById(id)
+
+		if (!product) {
+			return res.status(404).json({
+				success: false,
+				message: "Product not found",
+			})
+		}
+
+		const imageName = product.imageName
+		const image_path = path.join("public", "upload", imageName)
+
+		try {
+			// Use fs.promises.stat to check if the file exists asynchronously
+			await fs.stat(image_path)
+			// If the stat is successful, the file exists
+			await fs.unlink(image_path)
+		} catch (error) {
+			// Handle error (file does not exist, or other error)
+			console.error("Error deleting file:", error)
+		}
+
+		// Delete the product from the database after deleting the image
 		await Product.findByIdAndDelete(id)
 
 		return res.status(200).json({
