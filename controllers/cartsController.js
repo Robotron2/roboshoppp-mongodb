@@ -344,7 +344,7 @@ export const addToCartController = async (req, res) => {
 			throw Error("Please login and try again.")
 		}
 		const userCart = user.cart
-		console.log(userCart)
+
 		const newCartItem = new CartItem({
 			quantity,
 			product: productId,
@@ -354,14 +354,27 @@ export const addToCartController = async (req, res) => {
 			user.cart = userCart
 			await user.save()
 		}
+		const existingCartItem = userCart.filter((item) => {
+			return item.product.toString() === productId
+		})
+		if (!existingCartItem) {
+			userCart.push(newCartItem)
+			user.cart = userCart
+			await user.save()
+		}
 
-		res.status(200).json({
+		const updatedItemQuantity = (existingCartItem[0].quantity = quantity)
+		userCart.push(updatedItemQuantity)
+		user.cart = userCart
+		await user.save()
+
+		return res.status(200).json({
 			success: true,
 			message: "Product added to cart successfully",
 			cart: user.cart,
 		})
 	} catch (error) {
 		console.error(error)
-		res.status(500).json({ error: "Internal Server Error", success: false })
+		return res.status(500).json({ message: error.message, success: false })
 	}
 }
