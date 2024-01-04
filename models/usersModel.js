@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose"
+import { CartItem, cartItemSchema } from "./cartItemModel.js"
 
-export const userSchema = new Schema({
+const userSchema = new Schema({
 	name: {
 		type: String,
 		required: true,
@@ -37,11 +38,13 @@ export const userSchema = new Schema({
 		type: String,
 		default: "",
 	},
+	cart: [cartItemSchema],
 })
 
 userSchema.virtual("id").get(function () {
 	return this._id.toHexString()
 })
+
 userSchema.set("toJSON", {
 	virtuals: true,
 })

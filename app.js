@@ -29,9 +29,11 @@ import userRoute from "./routes/userRoute.js"
 import productsRoute from "./routes/productsRoute.js"
 import categoriesRoute from "./routes/categoryRoute.js"
 import ordersRoute from "./routes/ordersRoute.js"
+import cartsRoute from "./routes/cartsRoute.js"
 
 app.use(`${api}/user`, userRoute)
 app.use(`${api}/products`, productsRoute)
+app.use(`${api}/carts`, cartsRoute)
 app.use(`${api}/categories`, categoriesRoute)
 app.use(`${api}/orders`, ordersRoute)
 

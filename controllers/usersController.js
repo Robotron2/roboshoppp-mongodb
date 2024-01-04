@@ -67,6 +67,7 @@ export const getSingleUserController = async (req, res) => {
 export const getAllUsersController = async (req, res) => {
 	try {
 		const allUsers = await User.find({}).select("name email phone")
+		// const allUsers = await User.find({}).populate("cart")
 		if (!allUsers) {
 			return res.status(400).json({ success: false, message: "Cannot fetch users" })
 		}
