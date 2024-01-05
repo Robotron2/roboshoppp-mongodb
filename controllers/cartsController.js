@@ -1,6 +1,16 @@
 import { User } from "../models/usersModel.js"
 import { CartItem } from "../models/cartItemModel.js"
 
+const calculateTotalPrice = (cart) => {
+	let totalPrice = 0
+
+	cart.forEach((item) => {
+		totalPrice += item.quantity * item.product.price
+	})
+
+	return totalPrice
+}
+
 export const addToCartController = async (req, res) => {
 	const { userId } = req.user
 	const { productId, quantity } = req.body
@@ -60,10 +70,28 @@ export const addToCartController = async (req, res) => {
 			message: "Product added to cart successfully",
 			cart: user.cart,
 			cartLength: user.cart.length,
-			userCartContents,
 		})
 	} catch (error) {
 		console.error(error)
 		return res.status(500).json({ message: error.message, success: false })
+	}
+}
+
+export const getCartInfoController = async (req, res) => {
+	const { userId } = req.user
+	try {
+		const userCart = await User.findById(userId)
+			.select("cart")
+			.populate({ path: "cart", populate: { path: "product", select: "name price id image" } })
+
+		// if (userCart.cart.length === 0) {
+		//     return res.status(200).json({ success: true, message: "Empty cart", userCart })
+		// }
+		const length = userCart.cart.length
+		const total = calculateTotalPrice(userCart.cart)
+		res.status(200).json({ success: true, message: "User cart details", userCart, total, length })
+	} catch (error) {
+		console.log(error)
+		return res.status(500).json({ success: true, message: error.message })
 	}
 }
