@@ -95,3 +95,21 @@ export const getCartInfoController = async (req, res) => {
 		return res.status(500).json({ success: true, message: error.message })
 	}
 }
+
+export const removeItemFromCartController = async (req, res) => {
+	const { userId } = req.user
+	const { id } = req.params
+	try {
+		const user = await User.findById(userId)
+		const updatedCart = user.cart.filter((item) => {
+			return item.product._id.toString() !== id
+		})
+		// console.log(updatedCart)
+		user.cart = updatedCart
+		await user.save()
+		res.status(204).json({ success: true, message: "Item removed successfully" })
+	} catch (error) {
+		console.log(error)
+		return res.status(500).json({ success: true, message: error.message })
+	}
+}
